@@ -40,3 +40,30 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment files (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Editor backups
+*~
+*.bak
+*.swp
+*.swo
+
+# Local scratch / mockup files (one-off, not part of app)
+mockup.html
+mockup.cshtml
+mockup.*
+scratch/
+playground/
+
+# OS junk
+desktop.ini
+$RECYCLE.BIN/
+ehthumbs.db
