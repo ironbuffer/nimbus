@@ -1,0 +1,88 @@
+// BEM-style: .search is the block, __* are elements
+// Scoped to this component only — no global selectors
+
+.search {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 20px;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+
+  &__logo {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #7dd3fc;
+    margin: 0;
+
+    span {
+      color: #f1f5f9;
+    }
+  }
+
+  &__tagline {
+    color: #64748b;
+    font-size: 15px;
+    margin: 0 0 8px;
+    text-align: center;
+  }
+
+  &__form {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+  }
+
+  &__input {
+    flex: 1;
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-right: none;
+    border-radius: 10px 0 0 10px;
+    padding: 14px 18px;
+    font-size: 15px;
+    color: #f1f5f9;
+    outline: none;
+    transition: border-color 0.15s ease;
+
+    &:focus {
+      border-color: #3b82f6;
+    }
+
+    &::placeholder {
+      color: #475569;
+    }
+  }
+
+  &__button {
+    background: #3b82f6;
+    border: none;
+    border-radius: 0 10px 10px 0;
+    padding: 0 22px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #2563eb;
+    }
+  }
+
+  &__error {
+    color: #f87171;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  &__hint {
+    color: #475569;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+}
