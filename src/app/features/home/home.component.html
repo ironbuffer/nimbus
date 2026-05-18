@@ -1,0 +1,91 @@
+<section class="home">
+
+  @if (!cityService.selectedCity()) {
+    <!-- ── Empty state ── -->
+    <div class="empty">
+      <div class="empty__icon">🌤️</div>
+      <h2 class="empty__title">Welcome to Nimbus</h2>
+      <p class="empty__text">Choose a city to see the weather.</p>
+      <p class="empty__hint">Click <strong>Search</strong> in the top bar to begin.</p>
+    </div>
+  }
+
+  @else {
+    <!-- ── Dashboard ── -->
+    <h1 class="home__title">Dashboard</h1>
+
+    <div class="cards">
+
+      <!-- Today -->
+      <app-summary-card
+        title="Today"
+        icon="🌤️"
+        link="/details/today"
+        [loading]="weatherService.currentLoading()"
+      >
+        @let current = weatherService.currentData();
+        @if (current) {
+          <div class="preview preview--today">
+            <span class="preview__big">{{ current.current.temperature_2m }}°C</span>
+            <span class="preview__icon">{{ getWeatherEmoji(current.current.weather_code) }}</span>
+          </div>
+          <div class="preview__sub">
+            {{ getWeatherDescription(current.current.weather_code) }} ·
+            Feels {{ current.current.apparent_temperature }}°
+          </div>
+        }
+      </app-summary-card>
+
+      <!-- 7 Days -->
+      <app-summary-card
+        title="Next 7 Days"
+        icon="📅"
+        link="/details/seven-days"
+        [loading]="weatherService.dailyLoading()"
+      >
+        @if (weekAverageMax() !== null) {
+          <div class="preview">
+            <span class="preview__big">{{ weekAverageMax() }}°C</span>
+            <span class="preview__sub">avg high</span>
+          </div>
+          <div class="preview__sub">Tap to view full week</div>
+        }
+      </app-summary-card>
+
+      <!-- 16 Days -->
+      <app-summary-card
+        title="Next 16 Days"
+        icon="📆"
+        link="/details/sixteen-days"
+      >
+        <div class="preview">
+          <span class="preview__big">16</span>
+          <span class="preview__sub">day forecast</span>
+        </div>
+        <div class="preview__sub">Extended outlook</div>
+      </app-summary-card>
+
+      <!-- Hourly -->
+      <app-summary-card
+        title="Hourly"
+        icon="⏱️"
+        link="/details/hourly"
+        [loading]="weatherService.hourlyLoading()"
+      >
+        @if (nextThreeHours().length > 0) {
+          <div class="hourly-preview">
+            @for (h of nextThreeHours(); track h.time) {
+              <div class="hourly-preview__hour">
+                <span class="hourly-preview__time">{{ h.hour }}</span>
+                <span class="hourly-preview__icon">{{ getWeatherEmoji(h.weatherCode) }}</span>
+                <span class="hourly-preview__temp">{{ h.temperature }}°</span>
+              </div>
+            }
+          </div>
+        }
+      </app-summary-card>
+
+    </div>
+  }
+
+</section>

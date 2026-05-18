@@ -1,0 +1,37 @@
+@let data = weatherService.dailyData();
+
+<section class="detail">
+  <a class="detail__back" routerLink="/">← Back to dashboard</a>
+
+  <h1 class="detail__title">Next 16 Days</h1>
+  <p class="detail__subtitle">Extended outlook — accuracy decreases beyond 10 days</p>
+
+  @if (weatherService.dailyLoading()) {
+    <div class="detail__state">
+      <div class="detail__spinner"></div>
+      <p>Loading extended forecast…</p>
+    </div>
+  }
+  @else if (weatherService.dailyError()) {
+    <div class="detail__state detail__state--error">
+      <p>⚠️ {{ weatherService.dailyError() }}</p>
+    </div>
+  }
+  @else if (data) {
+    <p class="detail__location">📍 {{ data.city }}, {{ data.country }}</p>
+
+    <div class="days">
+      @for (day of data.days; track day.date; let i = $index) {
+        <article class="day" [class.day--today]="i === 0">
+          <h3 class="day__name">{{ dayName(day.date, i) }}</h3>
+          <div class="day__icon">{{ emoji(day.weatherCode) }}</div>
+          <div class="day__temps">
+            <span class="day__max">{{ day.maxTemp }}°</span>
+            <span class="day__min">/ {{ day.minTemp }}°</span>
+          </div>
+          <p class="day__rain">💧 {{ day.precipitationProbability }}%</p>
+        </article>
+      }
+    </div>
+  }
+</section>

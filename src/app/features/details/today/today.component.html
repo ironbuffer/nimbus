@@ -1,0 +1,49 @@
+@let data = weatherService.currentData();
+
+<section class="detail">
+  <a class="detail__back" routerLink="/">← Back to dashboard</a>
+
+  <h1 class="detail__title">Today</h1>
+
+  @if (weatherService.currentLoading()) {
+    <div class="detail__state">
+      <div class="detail__spinner"></div>
+      <p>Loading current weather…</p>
+    </div>
+  }
+  @else if (weatherService.currentError()) {
+    <div class="detail__state detail__state--error">
+      <p>⚠️ {{ weatherService.currentError() }}</p>
+    </div>
+  }
+  @else if (data) {
+    <p class="detail__location">📍 {{ data.city }}, {{ data.country }}</p>
+
+    <article class="current">
+      <div class="current__main">
+        <div class="current__temp">{{ data.current.temperature_2m }}°C</div>
+        <div class="current__desc">{{ description(data.current.weather_code) }}</div>
+      </div>
+      <div class="current__icon">{{ emoji(data.current.weather_code) }}</div>
+    </article>
+
+    <div class="metrics">
+      <div class="metric">
+        <span class="metric__label">Feels like</span>
+        <span class="metric__value">{{ data.current.apparent_temperature }}°C</span>
+      </div>
+      <div class="metric">
+        <span class="metric__label">Wind</span>
+        <span class="metric__value">{{ data.current.wind_speed_10m }} km/h</span>
+      </div>
+      <div class="metric">
+        <span class="metric__label">Humidity</span>
+        <span class="metric__value">{{ data.current.relative_humidity_2m }}%</span>
+      </div>
+      <div class="metric">
+        <span class="metric__label">Elevation</span>
+        <span class="metric__value">{{ data.elevation }} m</span>
+      </div>
+    </div>
+  }
+</section>

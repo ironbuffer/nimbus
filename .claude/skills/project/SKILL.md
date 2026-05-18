@@ -6,54 +6,61 @@ nimbus/
   src/
     main.ts                  ← bootstrapApplication() — never touch after setup
     index.html               ← single HTML shell, contains <app-root>
-    styles.scss              ← global styles only (resets, CSS variables)
+    styles.scss              ← global styles only
     app/
       app.config.ts          ← global providers: HTTP, Router
-      app.routes.ts          ← top-level routes (lazy-loaded)
-      app.component.ts       ← root shell — contains <router-outlet> only
-      core/                  ← singletons with no UI
-      shared/                ← reusable UI components
-      features/              ← one folder per screen/domain
-  angular.json               ← build config, asset paths, style injection
-  tsconfig.json              ← base TypeScript config
+      app.routes.ts          ← top-level lazy routes
+      app.component.ts       ← shell: <app-nav /> + <router-outlet />
+      core/
+        models/              ← TypeScript interfaces only
+        services/            ← singletons, no UI
+        utils/               ← pure functions (no state, no DI)
+      shared/
+        components/          ← reusable UI (nav, modals)
+      features/
+        home/                ← / route — dashboard
+        details/             ← /details/* routes
 ```
 
 ## Bootstrap Chain
 ```
 index.html  →  <app-root>
 main.ts     →  bootstrapApplication(AppComponent, appConfig)
-                    ├── AppComponent     → app.component.ts
-                    └── appConfig        → app.config.ts
+                    ├── AppComponent  → app.component.ts
+                    │     ├── <app-nav />
+                    │     └── <router-outlet />
+                    └── appConfig     → app.config.ts
                             ├── provideHttpClient()
-                            └── provideRouter(routes) → app.routes.ts
+                            └── provideRouter(routes)
 ```
-`main.ts` never changes. All wiring is in `app.config.ts`.
 
 ## Data Flow (end to end)
 ```
-User types city
-  → search.component navigates to /forecast?city=Berlin
-    → forecast.component reads ?city from ActivatedRoute
-      → calls WeatherService.search("Berlin")
-        → HTTP: geocoding API → lat/long
-          → HTTP: forecast API → WeatherResponse
-            → transform: DailyForecast[] → DailyForecastDay[]
-              → weatherData signal updated
-                → forecast.component template re-renders
+User clicks "Search" in nav
+  → SearchModal opens
+    → User types → debounced geocoding API call
+      → User clicks a result → CityService.setCity()
+        → CityService persists to localStorage + signal updates
+          → WeatherService effect() detects change → clearAll()
+            → Detail page effect() detects city → loadCurrent/Daily/Hourly()
+              → HTTP call → signal updates
+                → Template re-renders via OnPush
 ```
 
 ## Where Each Concern Lives
 
-| Concern | Location | Rule |
-|---------|----------|------|
-| Global providers | `app.config.ts` | Singletons only |
-| Route definitions | `app.routes.ts` | Top level; features lazy-loaded |
-| HTTP calls | `core/services/` | Never in components |
-| TypeScript types | `core/models/` | Never inline in components/services |
-| Reusable UI | `shared/` | Only if used by 2+ features |
-| Screen logic | `features/{name}/` | Self-contained per screen |
-| Global styles | `styles.scss` | CSS variables, resets |
-| Feature styles | `features/{name}/*.scss` | Scoped to component |
+| Concern | Location |
+|---------|----------|
+| Global providers | `app.config.ts` |
+| Route definitions | `app.routes.ts` |
+| HTTP calls | `core/services/weather.service.ts` |
+| City state + persistence | `core/services/city.service.ts` |
+| TypeScript types | `core/models/` |
+| Pure display helpers (emoji, formatters) | `core/utils/` |
+| Reusable UI | `shared/components/` |
+| Screen logic | `features/{home,details}/` |
+| Global styles | `styles.scss` |
+| Feature styles | feature folder scss files (BEM-scoped) |
 
 ## Do Not
 - Import feature components eagerly in `app.routes.ts`
@@ -61,3 +68,4 @@ User types city
 - Use constructor injection (use `inject()`)
 - Use `.subscribe()` in components (read signals directly)
 - Create a `SharedModule` or `CoreModule` (standalone architecture)
+- Add helpers to services if they have no state or DI — use `core/utils/`

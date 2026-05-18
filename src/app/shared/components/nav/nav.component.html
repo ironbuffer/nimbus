@@ -1,0 +1,31 @@
+<!--
+  Top navigation:
+    - Logo (clickable, routes home)
+    - Selected city (or empty state)
+    - Search button (opens modal)
+
+  Modal is rendered conditionally below the nav element so it overlays
+  everything via fixed positioning when open.
+-->
+<nav class="nav">
+  <a class="nav__logo" routerLink="/">
+    nim<span>bus</span>
+  </a>
+
+  <div class="nav__city">
+    @if (cityService.selectedCity(); as city) {
+      <span class="nav__pin">📍</span>
+      <span class="nav__city-name">{{ city.name }}, {{ city.country }}</span>
+    } @else {
+      <span class="nav__city-empty">No city selected</span>
+    }
+  </div>
+
+  <button class="nav__search-btn" (click)="openSearch()">
+    🔍 <span>Search</span>
+  </button>
+</nav>
+
+@if (isSearchOpen()) {
+  <app-search-modal (close)="closeSearch()" />
+}

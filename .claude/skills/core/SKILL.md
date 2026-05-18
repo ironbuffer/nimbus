@@ -2,73 +2,111 @@
 
 ## What belongs in core/
 A file belongs in `core/` if ALL three are true:
-1. It is a singleton (one instance app-wide)
+1. It is a singleton (services) or pure (utils/models)
 2. It has no UI (no template, no HTML)
 3. It is used by more than one feature
 
 ```
 core/
   models/
-    weather.models.ts    ← all TypeScript interfaces
+    city.models.ts           ← SelectedCity
+    weather.models.ts        ← all weather interfaces
   services/
-    weather.service.ts   ← all HTTP calls + signal state
+    city.service.ts          ← selected city + localStorage
+    weather.service.ts       ← HTTP + per-range signals
+  utils/
+    weather-display.utils.ts ← getWeatherEmoji, getWeatherDescription, getDayName
 ```
+
+## CityService
+
+### Signal API
+```ts
+selectedCity = signal<SelectedCity | null>(null)   // read-only via asReadonly()
+```
+
+### Public methods
+```ts
+setCity(city: SelectedCity): void   // updates signal + writes localStorage
+clearCity(): void                    // resets signal + removes localStorage
+```
+
+### Behaviour
+- Hydrates from localStorage in constructor (singleton scope = runs once)
+- `try/catch` around all localStorage access (private browsing safe)
+- Type guard `isValidCity()` rejects corrupted entries
+- Storage key: `nimbus.selectedCity`
+
+## WeatherService
+
+### Signal API (3 triplets)
+```ts
+currentData   / currentLoading   / currentError
+dailyData     / dailyLoading     / dailyError
+hourlyData    / hourlyLoading    / hourlyError
+```
+
+### Public methods
+```ts
+loadCurrent(): void
+loadDaily(days: 7 | 16): void
+loadHourly(): void
+```
+
+### Behaviour
+- Each load reads city via `inject(CityService).selectedCity()`
+- Returns early if no city
+- `effect()` in constructor watches `CityService.selectedCity()` → calls `clearAll()`
+- No geocoding — city already has lat/long
+- Per-range cleanup: switching city clears all 9 signals
 
 ## Models — weather.models.ts
 
-### Interfaces (raw API shapes)
+### Raw API shapes
 | Interface | Purpose |
 |-----------|---------|
-| `CurrentUnits` | Unit labels returned by Open Meteo alongside current data |
-| `CurrentWeather` | Live conditions: temp, humidity, wind, feels-like |
-| `DailyUnits` | Unit labels for daily forecast |
-| `DailyForecast` | Raw parallel arrays from API (one value per day per field) |
-| `WeatherResponse` | Root API response — contains current + daily + metadata |
-| `GeocodingResult` | One city result from geocoding API |
-| `GeocodingResponse` | Root geocoding response — results array |
+| `CurrentWeather` | Current conditions |
+| `DailyForecast` | Raw parallel daily arrays |
+| `HourlyForecast` | Raw parallel hourly arrays |
+| `WeatherResponse` | Root response |
+| `GeocodingResult` / `GeocodingResponse` | Geocoding API |
 
-### Derived interfaces (component-ready shapes)
+### Derived shapes (used by components)
 | Interface | Purpose |
 |-----------|---------|
-| `DailyForecastDay` | One day object — produced by service, consumed by template |
-| `WeatherData` | Full resolved state — what service exposes via signal |
+| `DailyForecastDay` | Per-day, derived from arrays |
+| `HourlyForecastHour` | Per-hour, derived from arrays |
+| `CurrentWeatherData` | What detail/today consumes |
+| `DailyWeatherData` | What 7-day / 16-day pages consume |
+| `HourlyWeatherData` | What hourly page consumes |
 
-`DailyForecast` → `DailyForecastDay[]` conversion happens in the service, never in components.
+## Models — city.models.ts
 
-## WeatherService — weather.service.ts
-
-### Signals (read-only to consumers)
 ```ts
-weatherData = signal<WeatherData | null>(null)
-isLoading   = signal<boolean>(false)
-error       = signal<string | null>(null)
+interface SelectedCity {
+  name: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  timezone: string;
+}
 ```
-Components read signals directly: `weatherService.isLoading()` — no subscribe().
 
-### Public API
+Stores coordinates alongside name → weather calls don't re-geocode.
+
+## Utils — weather-display.utils.ts
+
+Pure functions. No state. No DI. Imported wherever needed.
+
 ```ts
-search(city: string): void
+getWeatherEmoji(code: number): string
+getWeatherDescription(code: number): string
+getDayName(isoDate: string, index: number): string
 ```
-Triggers geocode → forecast chain. Updates all three signals.
-
-### Internal flow
-1. `extractPlace()` — validates geocoding response, throws if city not found
-2. `buildWeatherUrl()` — constructs forecast URL with all required params
-3. `toWeatherData()` — maps raw response + place → `WeatherData`
-4. `toDailyForecastDays()` — zips parallel arrays → `DailyForecastDay[]` using index
-
-### RxJS pattern
-```ts
-geocodingHttp$
-  .pipe(
-    switchMap(geoRes => forecastHttp$.pipe(map(res => ({ place, res }))))
-  )
-  .subscribe({ next, error })
-```
-`switchMap` cancels in-flight requests on re-search. Never use `mergeMap` or `concatMap` for search.
 
 ## Rules
-- Never add UI concerns to `core/`
-- Never call `weatherService.search()` from `app.component.ts` — only from `forecast.component.ts`
-- Add new API fields to `weather.models.ts` first, then update service
-- New services follow the same signal pattern: `data`, `isLoading`, `error`
+- Never add UI to `core/`
+- Never call `weatherService.load*()` from `app.component.ts`
+- Update models first, then service, then components
+- New services follow the same per-call signal triplet pattern
+- New helpers: state/DI → service, no state/DI → util

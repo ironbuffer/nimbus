@@ -1,0 +1,78 @@
+// Sticky top nav. Stays visible while content scrolls.
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #1e293b;
+  color: #f1f5f9;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+
+  &__logo {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: #7dd3fc;
+    text-decoration: none;
+    flex-shrink: 0;
+
+    span { color: #f1f5f9; }
+  }
+
+  &__city {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-width: 0;                // allow truncation in flex item
+  }
+
+  &__pin { font-size: 14px; }
+
+  &__city-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__city-empty {
+    font-size: 13px;
+    color: #64748b;
+    font-style: italic;
+  }
+
+  &__search-btn {
+    background: #3b82f6;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    &:hover { background: #2563eb; }
+
+    // Hide the word "Search" on narrow screens — keep just the icon.
+    @media (max-width: 480px) {
+      span { display: none; }
+      padding: 9px 12px;
+    }
+  }
+}

@@ -1,0 +1,123 @@
+.home {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  color: #f1f5f9;
+
+  &__title {
+    font-size: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #94a3b8;
+    margin: 0 0 24px;
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────
+.empty {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+
+  &__icon {
+    font-size: 64px;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0;
+    color: #f1f5f9;
+  }
+
+  &__text {
+    font-size: 16px;
+    color: #94a3b8;
+    margin: 0;
+  }
+
+  &__hint {
+    font-size: 13px;
+    color: #64748b;
+    margin: 12px 0 0;
+
+    strong { color: #7dd3fc; }
+  }
+}
+
+// ── Grid of cards ─────────────────────────────────────────────────────────
+.cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Card preview content (projected into <app-summary-card>) ──────────────
+.preview {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+
+  &__big {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    color: #f1f5f9;
+  }
+
+  &__icon {
+    font-size: 32px;
+  }
+
+  &__sub {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 8px;
+  }
+}
+
+// ── Hourly preview (3 small hours stacked horizontally) ───────────────────
+.hourly-preview {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+
+  &__hour {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 4px;
+  }
+
+  &__time {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 600;
+  }
+
+  &__icon {
+    font-size: 18px;
+  }
+
+  &__temp {
+    font-size: 14px;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+}

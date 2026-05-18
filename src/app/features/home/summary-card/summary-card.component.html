@@ -1,0 +1,19 @@
+<!--
+  The whole card is an <a> so the entire surface is clickable.
+  Parent passes preview content via <ng-content> projection.
+-->
+<a class="card" [routerLink]="link()">
+  <header class="card__header">
+    <span class="card__icon">{{ icon() }}</span>
+    <h3 class="card__title">{{ title() }}</h3>
+    <span class="card__arrow">→</span>
+  </header>
+
+  <div class="card__body">
+    @if (loading()) {
+      <div class="card__skeleton"></div>
+    } @else {
+      <ng-content />
+    }
+  </div>
+</a>

@@ -1,0 +1,52 @@
+<!--
+  Two-layer structure:
+    .modal-backdrop   – darkened overlay; click closes modal
+    .modal            – the card itself; clicks inside don't bubble close
+-->
+<div class="modal-backdrop" (click)="onBackdropClick($event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Search city">
+
+    <header class="modal__header">
+      <h2 class="modal__title">Search City</h2>
+      <button class="modal__close" (click)="closeModal()" aria-label="Close">×</button>
+    </header>
+
+    <div class="modal__search">
+      <input
+        #searchInput
+        type="text"
+        class="modal__input"
+        placeholder="Type a city name…"
+        autocomplete="off"
+        (input)="onInput($event)"
+        [value]="query()"
+      />
+    </div>
+
+    <div class="modal__body">
+      @if (loading()) {
+        <p class="modal__hint">Searching…</p>
+      }
+      @else if (results().length > 0) {
+        <ul class="results">
+          @for (result of results(); track result.id) {
+            <li class="results__item" (click)="selectCity(result)">
+              <span class="results__pin">📍</span>
+              <div class="results__text">
+                <strong>{{ result.name }}</strong>
+                <span>{{ result.admin1 ? result.admin1 + ', ' : '' }}{{ result.country }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      }
+      @else if (searched() && query().length >= 2) {
+        <p class="modal__hint">No cities found for "{{ query() }}".</p>
+      }
+      @else {
+        <p class="modal__hint">Type at least 2 characters to search.</p>
+      }
+    </div>
+
+  </div>
+</div>

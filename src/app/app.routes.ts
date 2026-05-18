@@ -1,19 +1,37 @@
 import { Routes } from '@angular/router';
 
-// Lazy-loaded routes:
-// loadComponent() splits each feature into its own JS bundle
-// downloaded only when the user visits that route.
+// Lazy-loaded routes — each feature ships as its own JS chunk,
+// only downloaded when the user visits that route.
 export const routes: Routes = [
+  // ── Home dashboard ────────────────────────────────────────────────────
   {
     path: '',
     loadComponent: () =>
-      import('./features/search/search.component').then(m => m.SearchComponent),
+      import('./features/home/home.component').then(m => m.HomeComponent),
+  },
+
+  // ── Detail pages ──────────────────────────────────────────────────────
+  {
+    path: 'details/today',
+    loadComponent: () =>
+      import('./features/details/today/today.component').then(m => m.TodayComponent),
   },
   {
-    path: 'forecast',
+    path: 'details/seven-days',
     loadComponent: () =>
-      import('./features/forecast/forecast.component').then(m => m.ForecastComponent),
+      import('./features/details/seven-days/seven-days.component').then(m => m.SevenDaysComponent),
   },
-  // Catch-all: any unknown URL goes back to /
+  {
+    path: 'details/sixteen-days',
+    loadComponent: () =>
+      import('./features/details/sixteen-days/sixteen-days.component').then(m => m.SixteenDaysComponent),
+  },
+  {
+    path: 'details/hourly',
+    loadComponent: () =>
+      import('./features/details/hourly/hourly.component').then(m => m.HourlyComponent),
+  },
+
+  // Catch-all
   { path: '**', redirectTo: '' },
 ];

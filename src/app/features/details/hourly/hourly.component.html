@@ -1,0 +1,57 @@
+@let data = weatherService.hourlyData();
+
+<section class="detail">
+  <a class="detail__back" routerLink="/">← Back to dashboard</a>
+
+  <h1 class="detail__title">Hourly Forecast</h1>
+  <p class="detail__subtitle">Hour-by-hour breakdown for the next 24 hours</p>
+
+  @if (weatherService.hourlyLoading()) {
+    <div class="detail__state">
+      <div class="detail__spinner"></div>
+      <p>Loading hourly forecast…</p>
+    </div>
+  }
+  @else if (weatherService.hourlyError()) {
+    <div class="detail__state detail__state--error">
+      <p>⚠️ {{ weatherService.hourlyError() }}</p>
+    </div>
+  }
+  @else if (data) {
+    <p class="detail__location">📍 {{ data.city }}, {{ data.country }}</p>
+
+    @if (upcomingHours().length === 0) {
+      <div class="detail__state">
+        <p>No upcoming hours available.</p>
+      </div>
+    } @else {
+      <table class="hours">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Condition</th>
+            <th class="right">Temp</th>
+            <th class="right">💧 Rain</th>
+            <th class="right">💨 Wind</th>
+            <th class="right">💦 Humidity</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (h of upcomingHours(); track h.time) {
+            <tr>
+              <td class="time">{{ h.hour }}</td>
+              <td class="cond">
+                <span class="cond__icon">{{ emoji(h.weatherCode) }}</span>
+                <span class="cond__text">{{ description(h.weatherCode) }}</span>
+              </td>
+              <td class="right temp">{{ h.temperature }}°</td>
+              <td class="right">{{ h.precipitationProbability }}%</td>
+              <td class="right">{{ h.windSpeed }} km/h</td>
+              <td class="right">{{ h.humidity }}%</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  }
+</section>

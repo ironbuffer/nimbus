@@ -1,67 +1,74 @@
 # Routing Skill — Nimbus
 
 ## Route map
-| Path | Component | How city is passed |
-|------|-----------|--------------------|
-| `/` | SearchComponent | — |
-| `/forecast` | ForecastComponent | `?city=Berlin` query param |
+| Path | Component | Notes |
+|------|-----------|-------|
+| `/` | HomeComponent | Dashboard with 4 cards or empty state |
+| `/details/today` | TodayComponent | Current conditions |
+| `/details/seven-days` | SevenDaysComponent | 7-day grid |
+| `/details/sixteen-days` | SixteenDaysComponent | 16-day grid (4×4) |
+| `/details/hourly` | HourlyComponent | 24-hour table |
+| `**` | redirectTo `/` | Catch-all |
 
 ## app.routes.ts — lazy loading pattern
 ```ts
-export const routes: Routes = [
-  {
-    path: '',
-    loadComponent: () =>
-      import('./features/search/search.component')
-        .then(m => m.SearchComponent),
-  },
-  {
-    path: 'forecast',
-    loadComponent: () =>
-      import('./features/forecast/forecast.component')
-        .then(m => m.ForecastComponent),
-  },
-];
+{
+  path: 'details/today',
+  loadComponent: () =>
+    import('./features/details/today/today.component')
+      .then(m => m.TodayComponent),
+}
 ```
 
 ### Why lazy loading
-`loadComponent` means the feature's JS bundle is only downloaded when the route is visited.
-- User lands on `/` → only `search` bundle downloads
-- User searches → `forecast` bundle downloads on demand
-- Never use `component:` (eager) for feature routes
+Each feature ships as a separate JS chunk. The home page loads → only the home bundle downloads. User clicks "Today" → today bundle downloads on demand. Smaller initial payload, faster cold load.
 
-## app.component.ts — the shell
-The root component has ONE job: provide `<router-outlet>`.
+## Navigation patterns
+
+### Programmatic navigation
+```ts
+private router = inject(Router);
+
+goHome(): void {
+  this.router.navigate(['/']);
+}
+```
+
+### Template links via routerLink
 ```html
-<!-- app.component.html -->
+<a routerLink="/details/today">View today</a>
+```
+
+### Auto-redirect when prerequisites missing
+Every detail page redirects home if no city is selected:
+```ts
+effect(() => {
+  const city = this.cityService.selectedCity();
+  if (!city) { this.router.navigate(['/']); return; }
+  this.weatherService.loadXxx();
+});
+```
+This handles direct URL access without state.
+
+## app.component shell
+The root component has ONE job: provide `<app-nav />` + `<router-outlet />`.
+
+```html
+<app-nav />
 <router-outlet />
 ```
-No navigation, no logic, no service calls in `app.component.ts`.
 
-## Navigating from search → forecast
-```ts
-// Inside search.component.ts
-this.router.navigate(['/forecast'], { queryParams: { city: 'Berlin' } });
-```
-Produces URL: `/forecast?city=Berlin`
+No navigation logic in `app.component.ts`. The nav handles the search modal; routes handle their own data loads.
 
-## Reading the query param in forecast
-```ts
-// Inside forecast.component.ts
-const city = this.route.snapshot.queryParamMap.get('city') ?? '';
-```
-Use `snapshot` because the param only needs to be read once on init.
-Use `queryParamMap.get()` — never access `queryParams` directly (always string-safe).
-
-## Back navigation
-```ts
-// Inside forecast.component.ts
-this.router.navigate(['/']);
-```
-No browser history manipulation needed.
+## City state vs route state
+- **City lives in `CityService`** (signal + localStorage), NOT in route params
+- Routes are stateless paths — they don't carry city in the URL
+- Detail pages read city from `CityService`, not from `ActivatedRoute`
+- This means the URL stays clean: `/details/today` (not `/details/today?city=Berlin`)
 
 ## Rules
 - Never use `RouterModule.forRoot()` — use `provideRouter(routes)` in `app.config.ts`
-- Never pass weather data through router state — always re-fetch from service
-- Query params are strings — always parse/validate after reading
-- If city param is missing or empty, redirect to `/` immediately
+- Always use `loadComponent` for feature routes
+- Never store weather data in route state — always re-fetch from service
+- Detail pages must redirect to `/` if `CityService` has no city
+- One route = one component file (no nested route configs)

@@ -1,0 +1,72 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 20px 22px;
+  text-decoration: none;
+  color: #f1f5f9;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  min-height: 140px;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: #3b82f6;
+    background: #1e3a5f;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  &__icon {
+    font-size: 22px;
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0;
+    flex: 1;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94a3b8;
+  }
+
+  &__arrow {
+    color: #475569;
+    font-size: 18px;
+    transition: transform 0.15s ease, color 0.15s ease;
+  }
+
+  &:hover &__arrow {
+    transform: translateX(2px);
+    color: #7dd3fc;
+  }
+
+  &__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  &__skeleton {
+    height: 48px;
+    background: linear-gradient(90deg, #334155 0%, #475569 50%, #334155 100%);
+    background-size: 200% 100%;
+    border-radius: 6px;
+    animation: shimmer 1.5s infinite linear;
+  }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

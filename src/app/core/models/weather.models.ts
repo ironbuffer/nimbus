@@ -1,15 +1,6 @@
-// Represents the units metadata returned alongside current conditions
-export interface CurrentUnits {
-  time: string;
-  interval: string;
-  temperature_2m: string;
-  weather_code: string;
-  wind_speed_10m: string;
-  relative_humidity_2m: string;
-  apparent_temperature: string;
-}
+// ── Raw Open Meteo response shapes ─────────────────────────────────────────
 
-// Represents live/current weather conditions at time of request
+// Live conditions at time of request
 export interface CurrentWeather {
   time: string;
   interval: number;
@@ -20,22 +11,23 @@ export interface CurrentWeather {
   apparent_temperature: number;
 }
 
-// Represents the units metadata returned alongside daily forecast
-export interface DailyUnits {
-  time: string;
-  temperature_2m_max: string;
-  temperature_2m_min: string;
-  weather_code: string;
-  precipitation_probability_max: string;
-}
-
-// Represents 7-day forecast arrays — each index = one day
+// Parallel daily arrays — one value per day per field
 export interface DailyForecast {
   time: string[];
   temperature_2m_max: number[];
   temperature_2m_min: number[];
   weather_code: number[];
   precipitation_probability_max: number[];
+}
+
+// Parallel hourly arrays — one value per hour per field
+export interface HourlyForecast {
+  time: string[];
+  temperature_2m: number[];
+  weather_code: number[];
+  precipitation_probability: number[];
+  wind_speed_10m: number[];
+  relative_humidity_2m: number[];
 }
 
 // Root response shape from Open Meteo /v1/forecast
@@ -47,14 +39,13 @@ export interface WeatherResponse {
   timezone: string;
   timezone_abbreviation: string;
   elevation: number;
-  current_units: CurrentUnits;
   current: CurrentWeather;
-  daily_units: DailyUnits;
   daily: DailyForecast;
 }
 
-// A single day's forecast — derived from DailyForecast arrays by index
-// Used by the forecast feature component to render one card per day
+// ── Derived per-day & per-hour shapes ──────────────────────────────────────
+// Service converts parallel arrays → these objects so templates loop cleanly.
+
 export interface DailyForecastDay {
   date: string;
   maxTemp: number;
@@ -63,8 +54,17 @@ export interface DailyForecastDay {
   precipitationProbability: number;
 }
 
-// ── Geocoding ──────────────────────────────────────────────────────────────
-// Open Meteo geocoding API returns a list of matching cities
+export interface HourlyForecastHour {
+  time: string;                         // raw ISO timestamp
+  hour: string;                         // formatted "14:00"
+  temperature: number;
+  weatherCode: number;
+  precipitationProbability: number;
+  windSpeed: number;
+  humidity: number;
+}
+
+// ── Geocoding (used by search modal) ───────────────────────────────────────
 
 export interface GeocodingResult {
   id: number;
@@ -75,22 +75,35 @@ export interface GeocodingResult {
   timezone: string;
   country: string;
   country_code: string;
-  admin1?: string; // state / region — not always present
+  admin1?: string;                      // state / region — not always present
 }
 
 export interface GeocodingResponse {
-  results?: GeocodingResult[]; // undefined when no city found
+  results?: GeocodingResult[];          // undefined when no city found
   generationtime_ms: number;
 }
 
-// ── Resolved weather data ──────────────────────────────────────────────────
-// What the service exposes to components after all API calls are done
+// ── Per-range resolved shapes consumed by components ───────────────────────
+// Each detail page reads exactly one of these from WeatherService.
 
-export interface WeatherData {
-  city: string;          // display name e.g. "Berlin"
-  country: string;       // e.g. "Germany"
-  timezone: string;      // e.g. "Europe/Berlin"
+export interface CurrentWeatherData {
+  city: string;
+  country: string;
+  timezone: string;
   elevation: number;
   current: CurrentWeather;
-  daily: DailyForecastDay[];
+}
+
+export interface DailyWeatherData {
+  city: string;
+  country: string;
+  timezone: string;
+  days: DailyForecastDay[];             // 7 or 16 entries depending on request
+}
+
+export interface HourlyWeatherData {
+  city: string;
+  country: string;
+  timezone: string;
+  hours: HourlyForecastHour[];          // 24 entries
 }
